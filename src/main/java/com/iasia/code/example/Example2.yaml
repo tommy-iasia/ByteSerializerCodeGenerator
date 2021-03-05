@@ -1,7 +1,7 @@
 Example2:
   - packetSize: "final unsigned short"
   - messageCount: "final unsigned byte"
-  - name: "protected Ascii8 4"
+  - name: "protected Ascii8 4 getter trim"
   - abc: "final int"
   - 1
   - sequence: "final unsigned int fluent getter setter"

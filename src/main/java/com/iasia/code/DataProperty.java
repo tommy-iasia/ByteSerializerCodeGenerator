@@ -52,7 +52,7 @@ public class DataProperty {
             return new DataProperty(name, tokens, dataClass);
         } else if (value instanceof String) {
             var texts = ((String) value).split("\\s+");
-            var tokens = Arrays.<Object>asList(texts);
+            var tokens = new ArrayList<Object>(Arrays.asList(texts));
             return new DataProperty(name, tokens, dataClass);
         } else if (value instanceof ArrayList) {
             var tokens = (ArrayList<Object>) value;
@@ -194,7 +194,9 @@ public class DataProperty {
             if (number != null) {
                 return Collections.singletonList(
                         (name != null ? "var " + name + " = " : "")
-                                + "com.iasia.buffer.Ascii8.getString(buffer, " + number + ");");
+                                + "com.iasia.buffer.Ascii8.getString(buffer, " + number + ")"
+                                + (tokens.contains("trim") ? ".trim()" : "")
+                                + ";");
             } else {
                 return Collections.singletonList(
                         (name != null ? "var " + name + " = " : "")

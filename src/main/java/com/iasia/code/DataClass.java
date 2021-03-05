@@ -251,6 +251,7 @@ public class DataClass {
                 "",
                 "    put(buffer);",
                 "",
+                "    buffer.flip();",
                 "    return buffer;",
                 "}");
     }

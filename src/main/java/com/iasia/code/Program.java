@@ -1,10 +1,10 @@
-package com.iasia;
-
-import com.iasia.code.DataClass;
+package com.iasia.code;
 
 public class Program {
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
+        System.out.println("write " + args.length + " files");
+
         for (String arg : args) {
             System.out.println("write " + arg);
 
