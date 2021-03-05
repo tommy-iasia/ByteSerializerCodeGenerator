@@ -1,3 +1,5 @@
 Example1:
-  - abc: "int"
-  - bcd: "Ascii8 5 trim"
+  - key1: final exclude int
+  - abc: int
+  - 2
+  - bcd: Ascii8 5 trim

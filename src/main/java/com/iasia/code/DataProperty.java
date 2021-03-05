@@ -67,11 +67,7 @@ public class DataProperty {
             return false;
         }
 
-        if (!tokens.contains("final")) {
-            return false;
-        }
-
-        return true;
+        return tokens.contains("final");
     }
     public String constructorParameter() {
         return valueClass() + " " + name;
@@ -165,6 +161,10 @@ public class DataProperty {
     }
 
     public List<String> read() {
+        if (tokens.contains("exclude")) {
+            return Collections.emptyList();
+        }
+
         if (tokens.contains("short")) {
             if (tokens.contains("unsigned")) {
                 return Collections.singletonList(
@@ -233,6 +233,10 @@ public class DataProperty {
     }
 
     public String length() {
+        if (tokens.contains("exclude")) {
+            return null;
+        }
+
         if (tokens.contains("short")) {
             return "2";
         } else if (tokens.contains("int")) {
@@ -249,6 +253,10 @@ public class DataProperty {
     }
 
     public List<String> fill() {
+        if (tokens.contains("exclude")) {
+            return Collections.emptyList();
+        }
+
         if (tokens.contains("short")) {
             if (name != null) {
                 return Collections.singletonList(
@@ -298,22 +306,6 @@ public class DataProperty {
                     return Collections.singletonList("buffer.put((byte) 77);");
                 }
             }
-        }
-    }
-
-    public String outerSet(String objectName, String valueName) {
-        if (tokens.contains("final")) {
-            return null;
-        }
-
-        if (tokens.contains("setter")) {
-            if (tokens.contains("fluent")) {
-                return objectName + "." + name + "(" + valueName + ");";
-            } else {
-                return objectName + ".set" + upperName() + "(" + valueName + ");";
-            }
-        } else {
-            return objectName + "." + name + " = " + valueName + ";";
         }
     }
 }

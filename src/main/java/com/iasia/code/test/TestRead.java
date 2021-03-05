@@ -13,10 +13,10 @@ public class TestRead {
     private static void test1() {
         System.out.println("test read 1");
 
-        var from = new Example1(123, "456");
+        var from = new Example1(123, 456, "789");
 
         var buffer = from.put();
-        var to = Example1.get(buffer);
+        var to = Example1.get(123, buffer);
 
         assert from.abc == to.abc;
         assert from.bcd.equals(to.bcd);

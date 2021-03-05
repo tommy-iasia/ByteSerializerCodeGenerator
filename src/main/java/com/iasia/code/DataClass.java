@@ -220,27 +220,57 @@ public class DataClass {
     }
 
     private List<String> read() {
-        var lines = new LinkedList<String>();
+        var outputLines = new LinkedList<String>();
 
-        lines.add("public static " + className + " get(ByteBuffer buffer) {");
+        var readProperties = new LinkedList<DataProperty>();
+        var readLines = new LinkedList<String>();
 
         for (var property : properties) {
             var read = property.read();
-            addLines(lines, read, "    ");
+            if (!read.isEmpty()) {
+                readProperties.add(property);
+                readLines.addAll(read);
+            }
         }
 
-        lines.add("");
+        var inputProperties = properties.stream().filter(t -> t.name != null).collect(Collectors.toList());
+        inputProperties.removeAll(readProperties);
+        inputProperties.removeIf(t -> !t.constructorRequired());
 
-        var names = properties.stream()
+        if (inputProperties.isEmpty()) {
+            outputLines.add("public static " + className + " get(ByteBuffer buffer) {");
+        } else {
+            var inputParameters = inputProperties.stream()
+                    .map(DataProperty::constructorParameter)
+                    .collect(Collectors.toList());
+
+            outputLines.add("public static " + className + " get("
+                    + String.join(", ", inputParameters) + ", "
+                    + "ByteBuffer buffer) {");
+        }
+
+        if (!readLines.isEmpty()) {
+            addLines(outputLines, readLines, "    ");
+            outputLines.add("");
+        }
+
+        var valuePropertiesSet = new HashSet<DataProperty>();
+        valuePropertiesSet.addAll(readProperties);
+        valuePropertiesSet.addAll(inputProperties);
+
+        var orderedValueProperties = new LinkedList<>(properties);
+        orderedValueProperties.retainAll(valuePropertiesSet);
+
+        var valueNames = orderedValueProperties.stream()
                 .map(t -> t.name)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
-        lines.add("    return new " + className + "(" + String.join(", ", names) + ");");
+        outputLines.add("    return new " + className + "(" + String.join(", ", valueNames) + ");");
 
-        lines.add("}");
+        outputLines.add("}");
 
-        return lines;
+        return outputLines;
     }
 
     private List<String> write() {
@@ -260,10 +290,14 @@ public class DataClass {
 
         lines.add("public int length() {");
 
-        if (properties.isEmpty()) {
+        var lengths = properties.stream()
+                .map(DataProperty::length)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        if (lengths.isEmpty()) {
             lines.add("    return 0;");
         } else {
-            var lengths = properties.stream().map(DataProperty::length).collect(Collectors.toList());
             lines.add("    return " + String.join(" + ", lengths) + ";");
         }
 
