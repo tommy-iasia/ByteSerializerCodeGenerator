@@ -1,4 +1,4 @@
-package com.iasia.example;
+package com.iasia.code.example;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

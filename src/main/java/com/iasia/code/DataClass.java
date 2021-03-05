@@ -7,6 +7,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class DataClass {
@@ -25,7 +26,7 @@ public class DataClass {
         return filePath
                 .replace('\\', '.')
                 .replaceAll("\\.[^.]+.yaml$", "")
-                .replaceAll(".+\\.src\\.(main\\.)?(java\\.)?", "");
+                .replaceAll("(^.+\\.)?src\\.(main\\.)?(java\\.)?", "");
     }
 
     public final String className;
