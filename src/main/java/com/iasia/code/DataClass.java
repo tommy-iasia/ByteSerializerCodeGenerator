@@ -104,45 +104,50 @@ public class DataClass {
         lines.add("");
 
         var constructor = constructor();
-        addLines(lines, constructor, "    ");
+        addLines(lines, constructor);
 
         var fields = fields();
         if (!fields.isEmpty()) {
             lines.add("");
-            addLines(lines, fields, "    ");
+            addLines(lines, fields);
         }
 
         var getters = getters();
         if (!getters.isEmpty()) {
-            addParts(lines, getters, "    ");
+            addParts(lines, getters);
         }
 
         var setters = setters();
         if (!setters.isEmpty()) {
-            addParts(lines, setters, "    ");
+            addParts(lines, setters);
         }
 
         lines.add("");
 
         var read = read();
-        addLines(lines, read, "    ");
+        addLines(lines, read);
 
         lines.add("");
 
         var write = write();
-        addLines(lines, write, "    ");
+        addLines(lines, write);
 
         var length = length();
-        addLines(lines, length, "    ");
+        addLines(lines, length);
 
         var fill = fill();
-        addLines(lines, fill, "    ");
+        addLines(lines, fill);
+
+        lines.add("");
+
+        var debug = debug();
+        addLines(lines, debug);
 
         lines.add("}");
 
         return lines;
     }
-    private static void addParts(List<String> lines, List<List<String>> parts, String indent) {
+    private static void addParts(List<String> lines, List<List<String>> parts) {
         for (var part : parts) {
             if (part.isEmpty()) {
                 continue;
@@ -151,13 +156,13 @@ public class DataClass {
             lines.add("");
 
             for (var line : part) {
-                lines.add(indent + line);
+                lines.add("    " + line);
             }
         }
     }
-    private static void addLines(List<String> lines, List<String> adds, String indent) {
+    private static void addLines(List<String> lines, List<String> adds) {
         for (var line : adds) {
-            lines.add(indent + line);
+            lines.add("    " + line);
         }
     }
 
@@ -258,7 +263,7 @@ public class DataClass {
         }
 
         if (!readLines.isEmpty()) {
-            addLines(outputLines, readLines, "    ");
+            addLines(outputLines, readLines);
             outputLines.add("");
         }
 
@@ -320,9 +325,29 @@ public class DataClass {
 
         for (var property : properties) {
             var fill = property.fill();
-            addLines(lines, fill, "    ");
+            addLines(lines, fill);
         }
 
+        lines.add("}");
+
+        return lines;
+    }
+
+    private List<String> debug() {
+        var lines = new LinkedList<String>();
+
+        lines.add("@Override");
+        lines.add("public String toString() {");
+        lines.add("    return \"" + className + "{\"");
+
+        for (var property : properties) {
+            var debug = property.debug();
+            if (debug != null) {
+                lines.add("            + " + debug);
+            }
+        }
+
+        lines.add("            + \"}\";");
         lines.add("}");
 
         return lines;

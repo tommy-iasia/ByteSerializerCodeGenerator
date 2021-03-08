@@ -47,4 +47,13 @@ public class Example1 {
         buffer.put(new byte[2], 0, 2);
         Ascii8.putString(buffer, bcd, 5);
     }
+
+    @Override
+    public String toString() {
+        return "Example1{"
+                + "key1=" + key1
+                + "abc=" + abc
+                + "bcd=" + bcd
+                + "}";
+    }
 }

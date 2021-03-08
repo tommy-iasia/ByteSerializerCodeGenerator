@@ -25,7 +25,7 @@ public class TestRead {
     private static void test2() {
         System.out.println("test read 2");
 
-        var from = new Example2(123, 255, "abc", 789, 012,345678);
+        var from = new Example2(123, 255, "abc", 789, 123,456789);
 
         var buffer = from.put();
         var to = Example2.get(buffer);

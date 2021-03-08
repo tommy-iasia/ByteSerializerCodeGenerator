@@ -73,4 +73,16 @@ public class Example2 {
         buffer.putInt((int) sequence);
         buffer.putLong(time);
     }
+
+    @Override
+    public String toString() {
+        return "Example2{"
+                + "packetSize=" + packetSize
+                + "messageCount=" + messageCount
+                + "name=" + name
+                + "abc=" + abc
+                + "sequence=" + sequence
+                + "time=" + time
+                + "}";
+    }
 }

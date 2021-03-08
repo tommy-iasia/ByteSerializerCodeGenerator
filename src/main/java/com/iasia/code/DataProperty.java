@@ -259,7 +259,6 @@ public class DataProperty {
             return number != null ? number.toString() : "1";
         }
     }
-
     public List<String> fill() {
         if (tokens.contains("exclude")) {
             return Collections.emptyList();
@@ -315,5 +314,13 @@ public class DataProperty {
                 }
             }
         }
+    }
+
+    public String debug() {
+        if (name == null) {
+            return null;
+        }
+
+        return "\"" +  name + "=\" + " + name;
     }
 }
