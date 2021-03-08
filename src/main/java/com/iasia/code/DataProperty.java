@@ -1,5 +1,7 @@
 package com.iasia.code;
 
+import com.iasia.buffer.Ascii8;
+
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -64,7 +66,7 @@ public class DataProperty {
 
     public List<String> imports() {
         if (tokens.contains("Ascii8")) {
-            return Collections.singletonList("com.iasia.buffer.Ascii8");
+            return Collections.singletonList(Ascii8.class.getCanonicalName());
         } else {
             return Collections.emptyList();
         }

@@ -1,5 +1,6 @@
 package com.iasia.code;
 
+import com.iasia.buffer.ByteSerializable;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.FileReader;
@@ -89,6 +90,8 @@ public class DataClass {
         imports.add("java.nio.ByteBuffer");
         imports.add("java.nio.ByteOrder");
 
+        imports.add(ByteSerializable.class.getCanonicalName());
+
         var propertyImports = properties.stream().flatMap(t -> t.imports().stream()).collect(Collectors.toSet());
         imports.addAll(propertyImports);
 
@@ -100,7 +103,7 @@ public class DataClass {
     private List<String> body() {
         var lines = new LinkedList<String>();
 
-        lines.add("public class " + className + " {");
+        lines.add("public class " + className + " implements " + ByteSerializable.class.getSimpleName() + " {");
         lines.add("");
 
         var constructor = constructor();
@@ -288,6 +291,7 @@ public class DataClass {
 
     private List<String> write() {
         return Arrays.asList(
+                "@Override",
                 "public ByteBuffer put() {",
                 "    var length = length();",
                 "    var buffer = ByteBuffer.allocate(length).order(ByteOrder.LITTLE_ENDIAN);",
@@ -301,6 +305,7 @@ public class DataClass {
     private List<String> length() {
         var lines = new LinkedList<String>();
 
+        lines.add("@Override");
         lines.add("public int length() {");
 
         var lengths = properties.stream()
@@ -321,6 +326,7 @@ public class DataClass {
     private List<String> fill() {
         var lines = new LinkedList<String>();
 
+        lines.add("@Override");
         lines.add("public void put(ByteBuffer buffer) {");
 
         for (var property : properties) {
