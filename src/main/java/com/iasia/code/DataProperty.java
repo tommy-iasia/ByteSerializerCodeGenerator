@@ -62,6 +62,14 @@ public class DataProperty {
         }
     }
 
+    public List<String> imports() {
+        if (tokens.contains("Ascii8")) {
+            return Collections.singletonList("com.iasia.buffer.Ascii8");
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
     public boolean constructorRequired() {
         if (name == null) {
             return false;
@@ -194,13 +202,13 @@ public class DataProperty {
             if (number != null) {
                 return Collections.singletonList(
                         (name != null ? "var " + name + " = " : "")
-                                + "com.iasia.buffer.Ascii8.getString(buffer, " + number + ")"
+                                + "Ascii8.getString(buffer, " + number + ")"
                                 + (tokens.contains("trim") ? ".trim()" : "")
                                 + ";");
             } else {
                 return Collections.singletonList(
                         (name != null ? "var " + name + " = " : "")
-                                + "com.iasia.buffer.Ascii8.getString(buffer);");
+                                + "Ascii8.getString(buffer);");
             }
         } else {
             var number = findNumber();
@@ -281,12 +289,12 @@ public class DataProperty {
             var number = findNumber();
             if (number != null) {
                 return Collections.singletonList(
-                        "com.iasia.buffer.Ascii8.putString(buffer, "
+                        "Ascii8.putString(buffer, "
                                 + (name != null ? name : "\"\"") + ", "
                                 + number + ");");
             } else {
                 return Collections.singletonList(
-                        "com.iasia.buffer.Ascii8.putString(buffer, "
+                        "Ascii8.putString(buffer, "
                                 + (name != null ? name : "\"\"") + ");");
             }
         } else {

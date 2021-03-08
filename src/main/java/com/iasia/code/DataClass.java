@@ -84,9 +84,17 @@ public class DataClass {
     }
 
     private List<String> imports() {
-        return Arrays.asList(
-                "java.nio.ByteBuffer",
-                "java.nio.ByteOrder");
+        var imports = new LinkedList<String>();
+
+        imports.add("java.nio.ByteBuffer");
+        imports.add("java.nio.ByteOrder");
+
+        var propertyImports = properties.stream().flatMap(t -> t.imports().stream()).collect(Collectors.toSet());
+        imports.addAll(propertyImports);
+
+        Collections.sort(imports);
+
+        return imports;
     }
 
     private List<String> body() {
