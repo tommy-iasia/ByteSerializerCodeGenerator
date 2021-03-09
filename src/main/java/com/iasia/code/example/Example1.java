@@ -28,7 +28,7 @@ public class Example1 implements ByteSerializable {
 
     public static Example1 get(int key1, ByteBuffer buffer) {
         var abc = buffer.getInt();
-        buffer.get(new byte[2]);
+        ByteSerializable.getBytes(buffer, 2);
         var bcd = Ascii8.getString(buffer, 5).trim();
     
         return new Example1(key1, abc, bcd);

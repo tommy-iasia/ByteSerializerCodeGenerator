@@ -13,18 +13,20 @@ public class Example2 implements ByteSerializable {
 
     public final static String CLASS_NAME = "Example2";
 
-    public Example2(int packetSize, int messageCount, int abc, long sequence, long time) {
+    public Example2(int packetSize, int messageCount, ExampleEnum1 abc, ExampleEnum2 bcd, long sequence, long time) {
         this.packetSize = packetSize;
         this.messageCount = messageCount;
         this.abc = abc;
+        this.bcd = bcd;
         this.sequence = sequence;
         this.time = time;
     }
-    public Example2(int packetSize, int messageCount, String name, int abc, long sequence, long time) {
+    public Example2(int packetSize, int messageCount, String name, ExampleEnum1 abc, ExampleEnum2 bcd, long sequence, long time) {
         this.packetSize = packetSize;
         this.messageCount = messageCount;
         this.name = name;
         this.abc = abc;
+        this.bcd = bcd;
         this.sequence = sequence;
         this.time = time;
     }
@@ -32,7 +34,8 @@ public class Example2 implements ByteSerializable {
     public final int packetSize;
     public final int messageCount;
     protected String name;
-    public final int abc;
+    public final ExampleEnum1 abc;
+    public final ExampleEnum2 bcd;
     private final long sequence;
     public final long time;
 
@@ -48,12 +51,13 @@ public class Example2 implements ByteSerializable {
         var packetSize = Short.toUnsignedInt(buffer.getShort());
         var messageCount = Byte.toUnsignedInt(buffer.get());
         var name = Ascii8.getString(buffer, 4).trim();
-        var abc = buffer.getInt();
+        var abc = ExampleEnum1.valueOf(buffer.getShort());
+        var bcd = ExampleEnum2.valueOf(ByteSerializable.getBytes(buffer, 2));
         buffer.get();
         var sequence = Integer.toUnsignedLong(buffer.getInt());
         var time = buffer.getLong();
     
-        return new Example2(packetSize, messageCount, name, abc, sequence, time);
+        return new Example2(packetSize, messageCount, name, abc, bcd, sequence, time);
     }
 
     @Override
@@ -68,14 +72,15 @@ public class Example2 implements ByteSerializable {
     }
     @Override
     public int length() {
-        return 2 + 1 + 4 + 4 + 1 + 4 + 8;
+        return 2 + 1 + 4 + 2 + 2 + 1 + 4 + 8;
     }
     @Override
     public void put(ByteBuffer buffer) {
         buffer.putShort((short) packetSize);
         buffer.put((byte) messageCount);
         Ascii8.putString(buffer, name, 4);
-        buffer.putInt(abc);
+        buffer.putShort(abc.value);
+        buffer.put(bcd.value(), 0, 2);
         buffer.put((byte) 77);
         buffer.putInt((int) sequence);
         buffer.putLong(time);
@@ -88,6 +93,7 @@ public class Example2 implements ByteSerializable {
                 + "messageCount=" + messageCount
                 + "name=" + name
                 + "abc=" + abc
+                + "bcd=" + bcd
                 + "sequence=" + sequence
                 + "time=" + time
                 + "}";

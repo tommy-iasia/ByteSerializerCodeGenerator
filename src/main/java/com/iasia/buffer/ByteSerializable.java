@@ -7,4 +7,11 @@ public interface ByteSerializable {
 
     int length();
     void put(ByteBuffer buffer);
+
+    static byte[] getBytes(ByteBuffer buffer, int length) {
+        var bytes = new byte[length];
+        buffer.get(bytes);
+
+        return bytes;
+    }
 }

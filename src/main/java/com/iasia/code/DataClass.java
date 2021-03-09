@@ -32,7 +32,7 @@ public class DataClass {
     private String getOutputPath() {
         return filePath.replaceAll("\\.yaml$", ".java");
     }
-    private String getPackage() {
+    public String getPackage() {
         return filePath
                 .replace('\\', '.')
                 .replaceAll("\\.[^.]+\\.yaml$", "")

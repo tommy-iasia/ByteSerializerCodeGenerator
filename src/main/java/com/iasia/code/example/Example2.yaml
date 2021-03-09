@@ -1,11 +1,26 @@
 Example2:
-  - packetSize: "final unsigned short"
-  - messageCount: "final unsigned byte"
+  - packetSize: final unsigned short
+  - messageCount: final unsigned byte
   - name: "protected Ascii8 4 getter trim"
-  - abc: "final int"
+  - abc:
+    - final
+    - short
+    - enum:
+      - com.iasia.code.example
+      - ExampleEnum1
+      - valueOf
+      - value
+  - bcd:
+    - final
+    - 2
+    - enum:
+        - com.iasia.code.example
+        - ExampleEnum2
+        - valueOf
+        - value()
   - 1
-  - sequence: "final unsigned int fluent getter setter"
+  - sequence: final unsigned int fluent getter setter
   - time:
-      - final
-      - unsigned
-      - long
+    - final
+    - unsigned
+    - long

@@ -2,7 +2,6 @@ package com.iasia.code;
 
 import com.iasia.buffer.Ascii8;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class DataProperty {
@@ -30,6 +29,32 @@ public class DataProperty {
         }
 
         return null;
+    }
+    @SuppressWarnings("unchecked")
+    private DataEnum findEnum() {
+        var valuesOptional = tokens.stream()
+                .filter(t -> t instanceof HashMap)
+                .map(t -> ((HashMap<String, Object>) t).get("enum"))
+                .filter(t -> t instanceof ArrayList)
+                .map(t -> (ArrayList<String>) t)
+                .findFirst();
+
+        if (valuesOptional.isEmpty()) {
+            return null;
+        }
+
+        var values = valuesOptional.get();
+        if (values.size() < 4) {
+            throw new RuntimeException();
+        }
+
+        var packageName = values.get(0);
+        var className = values.get(1);
+
+        var parser = values.get(2);
+        var valuer = values.get(3);
+
+        return new DataEnum(packageName, className, parser, valuer);
     }
 
     private final DataClass dataClass;
@@ -68,7 +93,17 @@ public class DataProperty {
         if (tokens.contains("Ascii8")) {
             return Collections.singletonList(Ascii8.class.getCanonicalName());
         } else {
-            return Collections.emptyList();
+            var enumClass = findEnum();
+            if (enumClass != null) {
+                var classPackage = dataClass.getPackage();
+                if (enumClass.packageName.equals(classPackage)) {
+                    return Collections.emptyList();
+                } else {
+                    return Collections.singletonList(enumClass.packageName + "." + enumClass.className);
+                }
+            } else {
+                return Collections.emptyList();
+            }
         }
     }
 
@@ -104,24 +139,29 @@ public class DataProperty {
         }
     }
     private String valueClass() {
-        if (tokens.contains("short")) {
-            return tokens.contains("unsigned") ?
-                    "int" : "short";
-        } else if (tokens.contains("int")) {
-            return tokens.contains("unsigned") ?
-                    "long" : "int";
-        } else if (tokens.contains("long")) {
-            return "long";
-        } else if (tokens.contains("Ascii8")) {
-            return "String";
+        var enumClass = findEnum();
+        if (enumClass != null) {
+            return enumClass.className;
         } else {
-            var number = findNumber();
-            if (number != null) {
-                return number == 1 ?
-                        "byte" : "byte[]";
-            } else {
+            if (tokens.contains("short")) {
                 return tokens.contains("unsigned") ?
-                        "int" : "byte";
+                        "int" : "short";
+            } else if (tokens.contains("int")) {
+                return tokens.contains("unsigned") ?
+                        "long" : "int";
+            } else if (tokens.contains("long")) {
+                return "long";
+            } else if (tokens.contains("Ascii8")) {
+                return "String";
+            } else {
+                var number = findNumber();
+                if (number != null) {
+                    return number == 1 ?
+                            "byte" : "byte[]";
+                } else {
+                    return tokens.contains("unsigned") ?
+                            "int" : "byte";
+                }
             }
         }
     }
@@ -175,68 +215,55 @@ public class DataProperty {
             return Collections.emptyList();
         }
 
+        var readValue = readValue();
+        if (name != null) {
+            var enumClass = findEnum();
+            if (enumClass != null) {
+                return Collections.singletonList(
+                        "var " + name + " = " + enumClass.className + "." + enumClass.parser + "(" + readValue + ");");
+            } else {
+                return Collections.singletonList("var " + name + " = " + readValue + ";");
+            }
+        } else {
+            return Collections.singletonList(readValue + ";");
+        }
+    }
+    private String readValue() {
         if (tokens.contains("short")) {
             if (tokens.contains("unsigned")) {
-                return Collections.singletonList(
-                        (name != null ? "var " + name + " = " : "")
-                                + "Short.toUnsignedInt(buffer.getShort());");
+                return "Short.toUnsignedInt(buffer.getShort())";
             } else {
-                return Collections.singletonList(
-                        (name != null ? "var " + name + " = " : "")
-                                + "buffer.getShort();");
+                return "buffer.getShort()";
             }
         } else if (tokens.contains("int")) {
             if (tokens.contains("unsigned")) {
-                return Collections.singletonList(
-                        (name != null ? "var " + name + " = " : "")
-                                + "Integer.toUnsignedLong(buffer.getInt());");
+                return "Integer.toUnsignedLong(buffer.getInt())";
             } else {
-                return Collections.singletonList(
-                        (name != null ? "var " + name + " = " : "")
-                                + "buffer.getInt();");
+                return "buffer.getInt()";
             }
         } else if (tokens.contains("long")) {
-            return Collections.singletonList(
-                    (name != null ? "var " + name + " = " : "")
-                            + "buffer.getLong();");
+            return "buffer.getLong()";
         } else if (tokens.contains("Ascii8")) {
             var number = findNumber();
             if (number != null) {
-                return Collections.singletonList(
-                        (name != null ? "var " + name + " = " : "")
-                                + "Ascii8.getString(buffer, " + number + ")"
-                                + (tokens.contains("trim") ? ".trim()" : "")
-                                + ";");
+                return "Ascii8.getString(buffer, " + number + ")"
+                        + (tokens.contains("trim") ? ".trim()" : "");
             } else {
-                return Collections.singletonList(
-                        (name != null ? "var " + name + " = " : "")
-                                + "Ascii8.getString(buffer);");
+                return "Ascii8.getString(buffer)";
             }
         } else {
             var number = findNumber();
             if (number != null) {
                 if (number == 1) {
-                    return Collections.singletonList(
-                            (name != null ? "var " + name + " = " : "")
-                                    + "buffer.get();");
+                    return "buffer.get()";
                 } else {
-                    if (name != null) {
-                        return Arrays.asList(
-                                "var " + name + " = new byte[" + number + "];",
-                                "buffer.get(" + name + ")");
-                    } else {
-                        return Collections.singletonList("buffer.get(new byte[" + number + "]);");
-                    }
+                    return "ByteSerializable.getBytes(buffer, " + number + ")";
                 }
             } else {
                 if (tokens.contains("unsigned")) {
-                    return Collections.singletonList(
-                            (name != null ? "var " + name + " = " : "")
-                                    + "Byte.toUnsignedInt(buffer.get());");
+                    return "Byte.toUnsignedInt(buffer.get())";
                 } else {
-                    return Collections.singletonList(
-                            (name != null ? "var " + name + " = " : "")
-                            + "buffer.get();");
+                    return "buffer.get()";
                 }
             }
         }
@@ -261,17 +288,22 @@ public class DataProperty {
             return number != null ? number.toString() : "1";
         }
     }
+
     public List<String> fill() {
         if (tokens.contains("exclude")) {
             return Collections.emptyList();
         }
+
+        var enumClass = findEnum();
 
         if (tokens.contains("short")) {
             if (name != null) {
                 return Collections.singletonList(
                         "buffer.putShort("
                                 + (tokens.contains("unsigned") ? "(short) " : "")
-                                + name + ");");
+                                + name
+                                + (enumClass != null ? "." + enumClass.valuer : "")
+                                + ");");
             } else {
                 return Collections.singletonList("buffer.putShort((short) 77);");
             }
@@ -280,31 +312,60 @@ public class DataProperty {
                 return Collections.singletonList(
                         "buffer.putInt("
                                 + (tokens.contains("unsigned") ? "(int) " : "")
-                                + name + ");");
+                                + name
+                                + (enumClass != null ? "." + enumClass.valuer : "")
+                                + ");");
             } else {
                 return Collections.singletonList("buffer.putInt(77);");
             }
         } else if (tokens.contains("long")) {
-            return Collections.singletonList("buffer.putLong(" + (name != null ? name : "77") + ");");
+            if (name != null) {
+                return Collections.singletonList(
+                        "buffer.putLong("
+                                + name
+                                + (enumClass != null ? "." + enumClass.valuer : "")
+                                + ");");
+            } else {
+                return Collections.singletonList("buffer.putLong(77);");
+            }
         } else if (tokens.contains("Ascii8")) {
             var number = findNumber();
             if (number != null) {
-                return Collections.singletonList(
-                        "Ascii8.putString(buffer, "
-                                + (name != null ? name : "\"\"") + ", "
-                                + number + ");");
+                if (name != null) {
+                    return Collections.singletonList(
+                            "Ascii8.putString(buffer, "
+                                    + name
+                                    + (enumClass != null ? "." + enumClass.valuer : "")
+                                    + ", "
+                                    + number + ");");
+                } else {
+                    return Collections.singletonList(
+                            "Ascii8.putString(buffer, \"\", " + number + ");");
+                }
             } else {
-                return Collections.singletonList(
-                        "Ascii8.putString(buffer, "
-                                + (name != null ? name : "\"\"") + ");");
+                if (name != null) {
+                    return Collections.singletonList(
+                            "Ascii8.putString(buffer, "
+                                    + name
+                                    + (enumClass != null ? "." + enumClass.valuer : "")
+                                    + ");");
+                } else {
+                    return Collections.singletonList(
+                            "Ascii8.putString(buffer, \"\");");
+                }
             }
         } else {
             var number = findNumber();
-            if (number != null) {
-                if (number == 1) {
-                    return Collections.singletonList("buffer.put(" + (name != null ? name : "(byte) 77") + ");");
+            if (number != null && number != 1) {
+                if (name != null) {
+                    return Collections.singletonList(
+                            "buffer.put("
+                                    + name
+                                    + (enumClass != null ? "." + enumClass.valuer : "")
+                                    + ", 0, "
+                                    + number + ");");
                 } else {
-                    return Collections.singletonList("buffer.put(" + (name != null ? name : "new byte[" + number + "]") + ", 0, " + number + ");");
+                    return Collections.singletonList("buffer.put(new byte[" + number + "], 0, " + number + ");");
                 }
             } else {
                 if (name != null) {
